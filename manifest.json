@@ -1,0 +1,125 @@
+{
+  "name":          "google-sheets",
+  "version":       "0.1.0",
+  "description":   "Google Sheets connector — read rows, append, update, clear, delete rows, plus create / inspect spreadsheets. Pick the action with the `operation` input. Auth via a workspace `generic` config holding a service-account JSON (credentialsJson).",
+  "primaryOutput": "result",
+
+  "configRefs": [
+    {
+      "name":        "google",
+      "type":        "generic",
+      "required":    true,
+      "description": "Generic config with credentialsJson — paste the full service-account JSON file from Google Cloud Console. Share each target spreadsheet with that service account's client_email (Editor role for write ops, Viewer for read-only)."
+    }
+  ],
+
+  "inputSchema": {
+    "type": "object",
+    "required": ["operation"],
+    "properties": {
+      "operation": {
+        "type": "string",
+        "description": "Which Google Sheets API call to run.",
+        "enum": [
+          "sheet.get",
+          "sheet.append",
+          "sheet.update",
+          "sheet.clear",
+          "sheet.delete-rows",
+          "spreadsheet.create",
+          "spreadsheet.get"
+        ]
+      },
+
+      "config": {
+        "type": "string",
+        "description": "Workspace config name to read credentials from. Default: 'google'."
+      },
+
+      "spreadsheetId": {
+        "type": "string",
+        "description": "Spreadsheet ID — the long token in the spreadsheet URL: docs.google.com/spreadsheets/d/<this part>/edit. Required for everything except spreadsheet.create."
+      },
+
+      "range": {
+        "type": "string",
+        "description": "A1-notation range, e.g. 'Sheet1!A1:D' or 'Sheet1'. Used by sheet.get / sheet.append / sheet.update / sheet.clear. Defaults to 'Sheet1' when omitted."
+      },
+
+      "values": {
+        "description": "2D array of cell values (rows × columns) for sheet.append / sheet.update. May also be an array of objects when `useHeaders` is true; the plugin maps each object key to the matching header in the sheet's first row."
+      },
+      "useHeaders": {
+        "type": "boolean",
+        "description": "When true, treat the first row of the range as headers. sheet.get returns objects keyed by header; sheet.append accepts objects and writes them under the matching columns. Default: false."
+      },
+
+      "valueInputOption": {
+        "type": "string",
+        "enum": ["RAW", "USER_ENTERED"],
+        "default": "USER_ENTERED",
+        "description": "How Google Sheets interprets the written values. RAW writes strings verbatim; USER_ENTERED runs the same parsers as typing into the UI (formulas, dates, numbers)."
+      },
+      "valueRenderOption": {
+        "type": "string",
+        "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+        "default": "FORMATTED_VALUE",
+        "description": "How sheet.get returns cell values. FORMATTED_VALUE applies cell formatting; UNFORMATTED_VALUE returns raw numbers/strings; FORMULA returns the cell's formula source."
+      },
+      "majorDimension": {
+        "type": "string",
+        "enum": ["ROWS", "COLUMNS"],
+        "default": "ROWS",
+        "description": "Row-major (one entry per row) or column-major for sheet.get."
+      },
+
+      "sheetId": {
+        "type": "integer",
+        "description": "Numeric ID of a sheet inside the spreadsheet. Required by sheet.delete-rows. Find it via spreadsheet.get."
+      },
+      "startIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "0-based row index where deletion starts (inclusive). Used by sheet.delete-rows."
+      },
+      "endIndex": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "0-based row index where deletion stops (exclusive). Used by sheet.delete-rows."
+      },
+
+      "title": {
+        "type": "string",
+        "description": "Spreadsheet title. Required by spreadsheet.create."
+      },
+      "sheetTitles": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Optional list of sheet (tab) names to initialise the new spreadsheet with. Defaults to ['Sheet1']. Used by spreadsheet.create."
+      },
+      "includeGridData": {
+        "type": "boolean",
+        "description": "When true, spreadsheet.get returns every cell's data (potentially huge). Default: false — metadata only."
+      },
+
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60000,
+        "default": 20000
+      }
+    }
+  },
+
+  "outputSchema": {
+    "type": "object",
+    "required": ["ok", "operation"],
+    "properties": {
+      "ok":        { "type": "boolean" },
+      "operation": { "type": "string", "description": "Echo of the input operation that ran." },
+      "status":    { "type": "integer", "description": "HTTP status from the underlying Sheets REST call." },
+      "result":    { "description": "Operation-specific payload. Array of rows or objects for sheet.get. ValueRange ack for append/update/clear. Spreadsheet object for spreadsheet.create / spreadsheet.get. Reply object for batchUpdate-based deletes." },
+      "url":       { "type": "string", "description": "Deep-link to the affected spreadsheet (when applicable)." }
+    }
+  }
+}
