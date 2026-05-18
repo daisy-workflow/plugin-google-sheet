@@ -3,6 +3,10 @@
 One Daisy node that talks to Google Sheets. The action is selected
 per-node via the **operation** dropdown.
 
+
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-Image-blue?logo=docker)](https://hub.docker.com/repository/docker/vivek13186/daisy-plugin-google-sheets)
+
+
 ## Operations
 
 | operation               | What it does                                                                  |

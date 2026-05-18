@@ -2,6 +2,7 @@
   "name":          "google-sheets",
   "version":       "0.1.0",
   "description":   "Google Sheets connector — read rows, append, update, clear, delete rows, plus create / inspect spreadsheets. Pick the action with the `operation` input. Auth via a workspace `generic` config holding a service-account JSON (credentialsJson).",
+  "ui":            { "category": "productivity", "icon": "google-sheets" },
   "primaryOutput": "result",
 
   "configRefs": [
