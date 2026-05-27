@@ -1,4 +1,4 @@
-# Google Sheets plugin for Daisy-workflow
+# Google Sheets plugin for Daisy AI Orchestrator
 
 One Daisy node that talks to Google Sheets. The action is selected
 per-node via the **operation** dropdown.
